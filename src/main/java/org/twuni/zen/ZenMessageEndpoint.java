@@ -20,6 +20,9 @@ public class ZenMessageEndpoint {
 	}
 
 	/**
+	 * This constructor assumes that the message ID is unknown. At least one endpoint in a Zen message should contain a
+	 * valid ID.
+	 * 
 	 * @param address should uniquely identify a host on the network.
 	 */
 	public ZenMessageEndpoint( String address ) {

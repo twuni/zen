@@ -16,6 +16,11 @@ public class ZenLearningTest {
 
 	private static final int BUFFER_SIZE = 0x0FFF;
 
+	/**
+	 * In this example, we will be constructing a simple message with a single fragment.
+	 * 
+	 * @throws IOException
+	 */
 	@Test
 	public void testHelloWorld() throws IOException {
 
@@ -23,7 +28,7 @@ public class ZenLearningTest {
 		ZenMessageEndpoint source = new ZenMessageEndpoint( "localhost", 1 );
 
 		// Step 2: Who are you talking to?
-		ZenMessageEndpoint destination = new ZenMessageEndpoint( "www.google.com" );
+		ZenMessageEndpoint destination = new ZenMessageEndpoint( "localhost" );
 
 		// Step 3: Get ready to send your message.
 		ZenMessage message = new ZenMessage( source, destination );
