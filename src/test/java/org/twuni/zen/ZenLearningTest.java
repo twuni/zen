@@ -7,10 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-
 import org.junit.Test;
-import org.twuni.zen.ZenMessage;
-import org.twuni.zen.ZenMessageEndpoint;
 import org.twuni.zen.io.ZenMessageListener;
 import org.twuni.zen.io.ZenMessageOutputStream;
 import org.twuni.zen.io.exception.MessageIncompleteException;
@@ -22,13 +19,22 @@ public class ZenLearningTest {
 	@Test
 	public void testHelloWorld() throws IOException {
 
+		// Step 1: Who are you?
 		ZenMessageEndpoint source = new ZenMessageEndpoint( "localhost", 1 );
-		ZenMessageEndpoint destination = new ZenMessageEndpoint( "www.google.com" );
-		ZenMessage message = new ZenMessage( source, destination, 1 );
-		ZenMessageOutputStream out = new ZenMessageOutputStream( message, System.out );
 
+		// Step 2: Who are you talking to?
+		ZenMessageEndpoint destination = new ZenMessageEndpoint( "www.google.com" );
+
+		// Step 3: Get ready to send your message.
+		ZenMessage message = new ZenMessage( source, destination );
+
+		// Step 4: Prepare the output stream.
+		OutputStream out = message.getOutputStream( System.out );
+
+		// Step 5: Write your message.
 		out.write( "Hello, world!".getBytes() );
 
+		// Step 6: Send your message.
 		out.flush();
 
 	}

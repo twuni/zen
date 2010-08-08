@@ -4,10 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
+import java.io.OutputStream;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.twuni.zen.io.ByteArraysInputStream;
+import org.twuni.zen.io.ZenMessageOutputStream;
 import org.twuni.zen.io.exception.FragmentAlreadyExistsException;
 
 public class ZenMessage {
@@ -21,11 +22,28 @@ public class ZenMessage {
 
 	private int fragmentsRemaining;
 
-	public ZenMessage( ZenMessageEndpoint source, ZenMessageEndpoint destination, int total ) {
+	/**
+	 * Prepares a message between the given source and destination that will contain a single fragment.
+	 * 
+	 * @param source The origin endpoint of this message.
+	 * @param destination The destination endpoint of this message.
+	 */
+	public ZenMessage( ZenMessageEndpoint source, ZenMessageEndpoint destination ) {
+		this( source, destination, 1 );
+	}
+
+	/**
+	 * Prepares a message between the given source and destination that will contain the given number of fragments.
+	 * 
+	 * @param source The origin endpoint of this message.
+	 * @param destination The destination endpoint of this message.
+	 * @param numberOfFragments The total number of fragments contained within this message.
+	 */
+	public ZenMessage( ZenMessageEndpoint source, ZenMessageEndpoint destination, int numberOfFragments ) {
 		this.source = source;
 		this.destination = destination;
-		this.bodyFragments = new byte[total][];
-		fragmentsRemaining = total;
+		this.bodyFragments = new byte[numberOfFragments][];
+		fragmentsRemaining = numberOfFragments;
 	}
 
 	/**
@@ -70,6 +88,16 @@ public class ZenMessage {
 	 */
 	public InputStream getBodyAsInputStream() {
 		return new ByteArraysInputStream( bodyFragments );
+	}
+
+	/**
+	 * Convenience method for getting an instance of ZenMessageOutputStream for this message.
+	 * 
+	 * @param out The underlying output stream to which fragments will be written.
+	 * @return an instance of ZenMessageOutputStream.
+	 */
+	public OutputStream getOutputStream( OutputStream out ) {
+		return new ZenMessageOutputStream( this, out );
 	}
 
 	/**

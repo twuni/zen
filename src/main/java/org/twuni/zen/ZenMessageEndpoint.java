@@ -10,11 +10,18 @@ public class ZenMessageEndpoint {
 	private final int messageId;
 	private final String address;
 
+	/**
+	 * @param address should uniquely identify a host on the network.
+	 * @param messageId should uniquely identify a message for this address.
+	 */
 	public ZenMessageEndpoint( String address, int messageId ) {
 		this.address = address;
 		this.messageId = messageId;
 	}
 
+	/**
+	 * @param address should uniquely identify a host on the network.
+	 */
 	public ZenMessageEndpoint( String address ) {
 		this( address, UNKNOWN_ID );
 	}

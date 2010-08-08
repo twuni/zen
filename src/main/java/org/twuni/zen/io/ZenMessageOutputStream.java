@@ -6,7 +6,9 @@ import java.io.OutputStream;
 
 import org.twuni.zen.ZenMessage;
 
-
+/**
+ * This class writes Zen message fragments to the underlying output stream. It buffers output until flush() is called.
+ */
 public class ZenMessageOutputStream extends OutputStream {
 
 	private final ZenMessage message;
@@ -15,13 +17,17 @@ public class ZenMessageOutputStream extends OutputStream {
 
 	private int sequence = 1;
 
+	/**
+	 * @param message The logical container for all fragments written by this output stream.
+	 * @param out The underlying stream to which fragments will be written.
+	 */
 	public ZenMessageOutputStream( ZenMessage message, OutputStream out ) {
 		this.message = message;
 		this.out = out;
 	}
 
 	/**
-	 * Appends the given byte to the buffer.
+	 * Simply appends the given byte to the buffer in memory.
 	 */
 	@Override
 	public void write( int b ) throws IOException {
