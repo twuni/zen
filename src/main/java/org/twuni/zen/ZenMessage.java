@@ -1,26 +1,19 @@
 package org.twuni.zen;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.twuni.zen.io.ByteArraysInputStream;
-import org.twuni.zen.io.ZenMessageOutputStream;
 import org.twuni.zen.io.exception.FragmentAlreadyExistsException;
 
 public class ZenMessage {
 
-	public static final String PROTOCOL = "Zen";
-	public static final byte VERSION = 1;
+	private final ZenEndpoint destination;
 
-	private final ZenMessageEndpoint source;
-	private final ZenMessageEndpoint destination;
-	private final byte [][] bodyFragments;
-
+	private ZenEndpoint source;
+	private byte [][] bodyFragments;
 	private int fragmentsRemaining;
+	private long timestamp = Long.MAX_VALUE;
+	private int position;
 
 	/**
 	 * Prepares a message between the given source and destination that will contain a single fragment.
@@ -28,8 +21,12 @@ public class ZenMessage {
 	 * @param source The origin endpoint of this message.
 	 * @param destination The destination endpoint of this message.
 	 */
-	public ZenMessage( ZenMessageEndpoint source, ZenMessageEndpoint destination ) {
+	public ZenMessage( ZenEndpoint destination, ZenEndpoint source, byte [] body ) {
 		this( source, destination, 1 );
+		try {
+			putFragment( 1, body );
+		} catch( FragmentAlreadyExistsException impossible ) {
+		}
 	}
 
 	/**
@@ -39,48 +36,20 @@ public class ZenMessage {
 	 * @param destination The destination endpoint of this message.
 	 * @param numberOfFragments The total number of fragments contained within this message.
 	 */
-	public ZenMessage( ZenMessageEndpoint source, ZenMessageEndpoint destination, int numberOfFragments ) {
-		this.source = source;
+	public ZenMessage( ZenEndpoint destination, ZenEndpoint source, int numberOfFragments ) {
 		this.destination = destination;
+		this.source = source;
 		this.bodyFragments = new byte[numberOfFragments][];
 		fragmentsRemaining = numberOfFragments;
 	}
 
-	/**
-	 * Creates a fragment at the given position within this message.
-	 * 
-	 * @return The Zen protocol message fragment, with headers.
-	 * @throws IndexOutOfBoundsException if the position is not between 1 and the total number of expected fragments,
-	 *             inclusive.
-	 * @throws FragmentAlreadyExistsException if a fragment already exists at the given position.
-	 */
-	public byte [] putFragment( int position, byte [] body ) throws FragmentAlreadyExistsException, IOException {
-
-		if( position < 1 || position > bodyFragments.length ) { throw new IndexOutOfBoundsException(); }
-		if( bodyFragments[position - 1] != null ) { throw new FragmentAlreadyExistsException(); }
-
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		DataOutputStream data = new DataOutputStream( out );
-
-		data.writeUTF( PROTOCOL );
-		data.writeByte( VERSION );
-		// TODO: Header checksum.
-		data.writeUTF( destination.getAddress() );
-		data.writeInt( destination.getMessageId() );
-		data.writeUTF( source.getAddress() );
-		data.writeInt( source.getMessageId() );
-		data.writeInt( bodyFragments.length );
-		data.writeInt( position );
-		data.writeLong( System.currentTimeMillis() );
-		data.write( DigestUtils.sha( body ) );
-		data.writeInt( body.length );
-		data.write( body );
-
-		bodyFragments[position - 1] = body;
-		fragmentsRemaining--;
-
-		return out.toByteArray();
-
+	@Override
+	public boolean equals( Object object ) {
+		if( object instanceof ZenMessage ) {
+			ZenMessage other = ZenMessage.class.cast( object );
+			return source.equals( other.source ) && destination.equals( other.destination );
+		}
+		return false;
 	}
 
 	/**
@@ -90,14 +59,8 @@ public class ZenMessage {
 		return new ByteArraysInputStream( bodyFragments );
 	}
 
-	/**
-	 * Convenience method for getting an instance of ZenMessageOutputStream for this message.
-	 * 
-	 * @param out The underlying output stream to which fragments will be written.
-	 * @return an instance of ZenMessageOutputStream.
-	 */
-	public OutputStream getOutputStream( OutputStream out ) {
-		return new ZenMessageOutputStream( this, out );
+	public ZenEndpoint getDestination() {
+		return destination;
 	}
 
 	/**
@@ -108,11 +71,51 @@ public class ZenMessage {
 		return bodyFragments[position - 1];
 	}
 
+	public int getNumberOfFragments() {
+		return bodyFragments.length;
+	}
+
+	public int getPosition() {
+		return position;
+	}
+
+	public ZenEndpoint getSource() {
+		return source;
+	}
+
+	public long getTimestamp() {
+		return timestamp;
+	}
+
 	/**
 	 * @return true if all fragments for this message have been filled, false otherwise.
 	 */
 	public boolean isComplete() {
 		return fragmentsRemaining <= 0;
+	}
+
+	/**
+	 * Creates a fragment at the given position within this message.
+	 * 
+	 * @throws IndexOutOfBoundsException if the position is not between 1 and the total number of expected fragments,
+	 *             inclusive.
+	 * @throws FragmentAlreadyExistsException if a fragment already exists at the given position.
+	 */
+	public void putFragment( int position, byte [] body ) throws FragmentAlreadyExistsException {
+		if( bodyFragments[position - 1] != null ) { throw new FragmentAlreadyExistsException(); }
+		bodyFragments[position - 1] = body;
+		this.position = position;
+		fragmentsRemaining--;
+	}
+
+	/**
+	 * The message timestamp should be the earliest of all of its fragments, therefore this method only updates the
+	 * message timestamp if the given timestamp is earlier than its current one.
+	 */
+	public void setTimestamp( long timestamp ) {
+		if( timestamp < this.timestamp ) {
+			this.timestamp = timestamp;
+		}
 	}
 
 }
