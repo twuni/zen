@@ -53,9 +53,8 @@ public class ZenLearningTest {
 		for( int i = 0; i < fragments.length; i++ ) {
 			String fragment = fragments[i];
 			message.putFragment( i + 1, fragment.getBytes() );
+			channel.write( message );
 		}
-
-		channel.write( message );
 
 	}
 
@@ -64,7 +63,7 @@ public class ZenLearningTest {
 		testWrite();
 		channel = new ZenChannel( new ByteArrayInputStream( buffer.toByteArray() ) );
 		ZenMessage message = channel.read();
-		Assert.assertEquals( "Hello, world!", message.getFragmentBody( 1 ) );
+		Assert.assertEquals( "Hello, world!", new String( message.getFragmentBody( 1 ) ) );
 	}
 
 	@Test
@@ -74,6 +73,7 @@ public class ZenLearningTest {
 
 		channel = new ZenChannel( new ByteArrayInputStream( buffer.toByteArray() ) );
 		ZenMessage message = channel.read();
+		message.mergeWith( channel.read() );
 
 		String hello = new String( message.getFragmentBody( 1 ) );
 		String world = new String( message.getFragmentBody( 2 ) );

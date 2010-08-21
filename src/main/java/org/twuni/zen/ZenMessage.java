@@ -118,4 +118,13 @@ public class ZenMessage {
 		}
 	}
 
+	public void mergeWith( ZenMessage message ) throws FragmentAlreadyExistsException {
+		mergeWith( message, message.getPosition() );
+	}
+
+	public void mergeWith( ZenMessage message, int position ) throws FragmentAlreadyExistsException {
+		byte [] body = message.getFragmentBody( position );
+		this.putFragment( position, body );
+	}
+
 }
