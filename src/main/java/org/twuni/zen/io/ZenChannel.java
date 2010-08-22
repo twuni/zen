@@ -34,7 +34,7 @@ public class ZenChannel {
 	 * @throws IOException whenever any error occurs with the input stream, including any data corruption or breach of
 	 *             protocol.
 	 */
-	public ZenMessage read() throws IOException {
+	public synchronized ZenMessage read() throws IOException {
 		in.readProtocol();
 		ZenMessage message = new ZenMessage( in.readEndpoint(), in.readEndpoint(), in.readInt() );
 		message.setTimestamp( in.readLong() );
@@ -49,7 +49,7 @@ public class ZenChannel {
 	 * @throws IndexOutOfBoundsException if the given position is illegal for this message.
 	 * @throws NullPointerException if there is no fragment at the given position.
 	 */
-	public void write( ZenMessage message, int position ) throws IOException {
+	public synchronized void write( ZenMessage message, int position ) throws IOException {
 
 		byte [] body = message.getFragmentBody( position );
 
