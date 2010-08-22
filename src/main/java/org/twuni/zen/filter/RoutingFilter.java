@@ -5,12 +5,19 @@ import java.io.IOException;
 import org.twuni.zen.ZenMessage;
 import org.twuni.zen.io.exception.RoutingException;
 
-public class DestinationFilter implements Filter {
+public class RoutingFilter implements Filter {
 
-	private Filter filter;
+	private final Filter next;
 
-	public DestinationFilter( Filter filter ) {
-		this.filter = filter;
+	public RoutingFilter() {
+		this( null );
+	}
+
+	public RoutingFilter( Filter next ) {
+		if( next == null ) {
+			next = new EndFilter();
+		}
+		this.next = next;
 	}
 
 	/**
@@ -20,9 +27,11 @@ public class DestinationFilter implements Filter {
 	 * @throws RoutingException if the message's destination address is not a known local address.
 	 */
 	@Override
-	public void delegate( ZenMessage message ) throws IOException {
+	public void handle( ZenMessage message ) throws IOException {
 		if( isLocalAddress( message.getDestination().getAddress() ) ) {
-			filter.delegate( message );
+			if( next != null ) {
+				next.handle( message );
+			}
 		} else {
 			throw new RoutingException();
 		}

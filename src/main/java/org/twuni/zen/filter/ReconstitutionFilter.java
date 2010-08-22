@@ -9,18 +9,25 @@ import org.twuni.zen.ZenMessage;
 public class ReconstitutionFilter implements Filter {
 
 	private final Map<ZenMessage, ZenMessage> messages = new HashMap<ZenMessage, ZenMessage>();
-	private Filter filter;
+	private final Filter next;
 
-	public ReconstitutionFilter( Filter filter ) {
-		this.filter = filter;
+	public ReconstitutionFilter() {
+		this( null );
+	}
+
+	public ReconstitutionFilter( Filter next ) {
+		if( next == null ) {
+			next = new EndFilter();
+		}
+		this.next = next;
 	}
 
 	/**
-	 * Merges the given message with its existing message or adds it to the list of known messages.
-	 * Then, if the message is complete, then delegates the message to the next filter in the chain.
+	 * Merges the given message with its existing message or adds it to the list of known messages. Then, if the message
+	 * is complete, then delegates the message to the next filter in the chain.
 	 */
 	@Override
-	public void delegate( ZenMessage message ) throws IOException {
+	public void handle( ZenMessage message ) throws IOException {
 
 		ZenMessage existing = messages.get( message );
 
@@ -33,7 +40,7 @@ public class ReconstitutionFilter implements Filter {
 
 		if( existing.isComplete() ) {
 			messages.remove( message );
-			filter.delegate( message );
+			next.handle( message );
 		}
 
 	}

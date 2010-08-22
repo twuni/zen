@@ -6,6 +6,6 @@ import org.twuni.zen.ZenMessage;
 
 public interface Filter {
 
-	public abstract void delegate( ZenMessage message ) throws IOException;
+	public abstract void handle( ZenMessage message ) throws IOException;
 
 }

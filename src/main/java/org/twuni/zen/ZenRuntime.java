@@ -1,33 +1,45 @@
 package org.twuni.zen;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.twuni.zen.filter.DestinationFilter;
-import org.twuni.zen.filter.ReconstitutionFilter;
+import org.twuni.zen.filter.ChannelDelegatorFilter;
 import org.twuni.zen.filter.Filter;
+import org.twuni.zen.filter.ReconstitutionFilter;
+import org.twuni.zen.filter.RoutingFilter;
 import org.twuni.zen.io.ZenChannel;
 import org.twuni.zen.io.ZenMessageListener;
+import org.twuni.zen.io.exception.RoutingException;
 
 public class ZenRuntime {
 
 	public static void main( String [] args ) {
 
-		ZenChannel channel = new ZenChannel( System.in, System.out );
+		final Set<ZenChannel> channels = new HashSet<ZenChannel>();
 
-		Filter consumer = new Filter() {
+		final ZenChannel channel = new ZenChannel( System.in, System.out );
+
+		final Filter delegator = new ChannelDelegatorFilter( channels );
+		final Filter combiner = new ReconstitutionFilter();
+		final Filter router = new RoutingFilter( combiner );
+
+		final Filter director = new Filter() {
 
 			@Override
-			public void delegate( ZenMessage message ) throws IOException {
-				System.out.println( message );
+			public void handle( ZenMessage message ) throws IOException {
+				try {
+					router.handle( message );
+				} catch( RoutingException exception ) {
+					delegator.handle( message );
+				}
 			}
 
 		};
 
-		ReconstitutionFilter combiner = new ReconstitutionFilter( consumer );
-		DestinationFilter filter = new DestinationFilter( combiner );
+		final ZenMessageListener listener = new ZenMessageListener( channel, director );
 
-		ZenMessageListener listener = new ZenMessageListener( channel, filter );
-
+		channels.add( channel );
 		listener.start();
 
 	}
