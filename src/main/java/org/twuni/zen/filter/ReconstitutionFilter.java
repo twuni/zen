@@ -6,16 +6,16 @@ import java.util.Map;
 
 import org.twuni.zen.ZenMessage;
 
-public class ReconstitutionFilter implements Filter {
+public class ReconstitutionFilter implements Filter<ZenMessage> {
 
 	private final Map<ZenMessage, ZenMessage> messages = new HashMap<ZenMessage, ZenMessage>();
-	private final Filter next;
+	private final Filter<ZenMessage> next;
 
 	public ReconstitutionFilter() {
 		this( null );
 	}
 
-	public ReconstitutionFilter( Filter next ) {
+	public ReconstitutionFilter( Filter<ZenMessage> next ) {
 		if( next == null ) {
 			next = new EndFilter();
 		}

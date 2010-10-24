@@ -5,15 +5,15 @@ import java.io.IOException;
 import org.twuni.zen.ZenMessage;
 import org.twuni.zen.io.exception.RoutingException;
 
-public class RoutingFilter implements Filter {
+public class RoutingFilter implements Filter<ZenMessage> {
 
-	private final Filter next;
+	private final Filter<ZenMessage> next;
 
 	public RoutingFilter() {
 		this( null );
 	}
 
-	public RoutingFilter( Filter next ) {
+	public RoutingFilter( Filter<ZenMessage> next ) {
 		if( next == null ) {
 			next = new EndFilter();
 		}
@@ -29,9 +29,7 @@ public class RoutingFilter implements Filter {
 	@Override
 	public void handle( ZenMessage message ) throws IOException {
 		if( isLocalAddress( message.getDestination().getAddress() ) ) {
-			if( next != null ) {
-				next.handle( message );
-			}
+			next.handle( message );
 		} else {
 			throw new RoutingException();
 		}

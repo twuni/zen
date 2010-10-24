@@ -25,7 +25,7 @@ public class ByteArraysInputStream extends InputStream {
 
 			if( index < arrays[array].length ) {
 
-				value = 0x000000FF & arrays[array][index];
+				value = 0xFF & arrays[array][index];
 				index++;
 
 			} else {

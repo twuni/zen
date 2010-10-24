@@ -8,7 +8,7 @@ import org.twuni.zen.ZenMessage;
  * This filter is the default next item for other filters whenever none is specified. It simply discards any messages
  * passed to it.
  */
-public final class EndFilter implements Filter {
+public final class EndFilter implements Filter<ZenMessage> {
 
 	/**
 	 * This method does nothing.

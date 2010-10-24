@@ -10,9 +10,9 @@ import org.twuni.zen.filter.Filter;
 public class ZenMessageListener extends Thread {
 
 	private final ZenChannel channel;
-	private final Filter filter;
+	private final Filter<ZenMessage> filter;
 
-	public ZenMessageListener( final ZenChannel channel, Filter filter ) {
+	public ZenMessageListener( final ZenChannel channel, Filter<ZenMessage> filter ) {
 		super();
 		if( filter == null ) {
 			filter = new EndFilter();

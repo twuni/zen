@@ -9,7 +9,7 @@ import org.twuni.zen.io.ZenChannel;
 /**
  * The message delegator forwards a message along each of its known channels.
  */
-public class ChannelDelegatorFilter implements Filter {
+public class ChannelDelegatorFilter implements Filter<ZenMessage> {
 
 	protected final Set<ZenChannel> channels;
 
